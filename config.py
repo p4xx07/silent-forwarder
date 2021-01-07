@@ -17,5 +17,5 @@ def getConfig():
 
     token = config_dictionary["token"]
     channel_id = config_dictionary["channel_id"]
-    valid_users = config_dictionary["valid_users"].split("=")[1].split(",")
-    return (token, chat_id, valid_users)
+    valid_users = config_dictionary["valid_users"].split(",")
+    return (token, channel_id, valid_users)
