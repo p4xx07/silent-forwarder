@@ -5,6 +5,7 @@ import download
 import os
 import subprocess
 import re
+import json
 from logger import Logger
 from telepot import Bot
 from telepot.loop import MessageLoop
@@ -24,6 +25,7 @@ class Handler():
 
     def handle(self, msg):
         content_type, chat_type, chat_id = telepot.glance(msg)
+        self.logger.logInfo(json.dumps(msg))
         if str(chat_id) not in self.valid_users:
             self.logger.logWarn("user invalid\t" + str(chat_id))
             return
@@ -76,5 +78,5 @@ class Handler():
         self.active = False
 
     def restart(self, chat_id):
-        self.sendTextMessage(chat_id, "Restarting down")
+        self.sendTextMessage(chat_id, "Restarting")
         self.active = True

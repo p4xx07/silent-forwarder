@@ -12,12 +12,10 @@ def start(bot: Bot, config):
     MessageLoop(bot, handler.handle).run_as_thread()
     last_epoch = time.time()
     while True:
-        time.sleep(30)
-        continue
         if handler.active is False:
             time.sleep(60)
             return
-        if(time.time() - last_epoch >= 60 * 0):
+        if(time.time() - last_epoch >= 60 * 20):
             handler.sendImageToChannel()
             last_epoch = time.time()
         time.sleep(60)
