@@ -7,7 +7,7 @@ def readConfig(path) -> {}:
             d[key] = val.replace('\n', '')
     return d
 
-def getConfig(): 
+def get(): 
     config_path = "/etc/SilentForwarder/config.dat"
 
     if os.name == 'nt':
