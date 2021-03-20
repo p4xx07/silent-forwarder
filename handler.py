@@ -46,13 +46,16 @@ def save_image(update, context):
 def send_image_to_channel(bot, channel_id):
     (image, path) = ImageHelper.get()
     bot.send_photo(channel_id, image)
-    return
     os.system("rm " + path)
 
 def send_images_to_channel(bot, channel_id):
     (images, paths) = ImageHelper.get_multiple(10)
+    if len(images) <= 0:
+        return
+    if len(images) == 1:
+        send_image_to_channel(bot, channel_id)
+        return
     bot.send_media_group(channel_id, images)
-    return
     for path in paths:
         os.system("rm " + path)
 
@@ -63,7 +66,7 @@ def reminder(bot, channel_id):
         if active is False:
             time.sleep(5)
             continue
-        if(time.time() - last_epoch >= 5 * 1):
+        if(time.time() - last_epoch >= 60 * 10):
             send_images_to_channel(bot, channel_id)
             last_epoch = time.time()
             continue

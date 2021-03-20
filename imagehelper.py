@@ -34,7 +34,7 @@ def get_multiple(count):
         path = "/opt/SilentForwarder/img/" + outstr.rstrip("\n")
         paths.append(path)
         
-        image = open(path.encode('utf-8'), "rb")
+        image = open(path, "rb")
         media = telegram.InputMediaPhoto(media=image)
         images.append(media)
         
