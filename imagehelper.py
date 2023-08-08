@@ -36,7 +36,15 @@ def get_multiple(count):
         
         image = open(path, "rb")
         media = telegram.InputMediaPhoto(media=image)
+        image.close()
         images.append(media)
         
 
     return (images, paths)
+
+def count():
+        cmd = "ls /opt/SilentForwarder/img | wc -l"
+        ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        stdout = ps.communicate()[0]
+        outstr = stdout.decode("utf-8")
+        return outstr

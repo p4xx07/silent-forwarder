@@ -24,8 +24,20 @@ def stop(update, context):
     active = False
     context.bot.send_message(chat_id=update.effective_chat.id, text="Stopped")
 
+def restart(update, context):
+    global active
+    if not auth(update.effective_chat.id):
+        return
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Restarting")
+    os.system("sudo systemctl restart silent_forwarder")
+
 def unknown(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="Invalid command")
+
+def notify_count(bot):
+    bot.send_message(chat_id=146470365, text="Remaining")
+    count = ImageHelper.count()
+    bot.send_message(chat_id=146470365, text="Remaining " + str(count))
 
 def restarted(bot):
     bot.send_message(chat_id=146470365, text="Restarted!")
@@ -46,18 +58,25 @@ def save_image(update, context):
 def send_image_to_channel(bot, channel_id):
     (image, path) = ImageHelper.get()
     bot.send_photo(channel_id, image)
+    image.close()
     os.system("rm " + path)
+    notify_count()
 
 def send_images_to_channel(bot, channel_id):
-    (images, paths) = ImageHelper.get_multiple(10)
-    if len(images) <= 0:
-        return
-    if len(images) == 1:
-        send_image_to_channel(bot, channel_id)
-        return
-    bot.send_media_group(channel_id, images)
-    for path in paths:
-        os.system("rm " + path)
+    try:
+        (images, paths) = ImageHelper.get_multiple(5)
+        if len(images) <= 0:
+            return
+        if len(images) == 1:
+            send_image_to_channel(bot, channel_id)
+            return
+        bot.send_media_group(channel_id, images)
+        for path in paths:
+            os.system("rm " + path)
+        notify_count()
+    except Exception as e:
+        print("lolol something went wrong")
+        print(e)
 
 def reminder(bot, channel_id):
     global active
@@ -66,8 +85,9 @@ def reminder(bot, channel_id):
         if active is False:
             time.sleep(5)
             continue
-        if(time.time() - last_epoch >= 60 * 10):
+        if(time.time() - last_epoch >= 60 * 30):
             send_images_to_channel(bot, channel_id)
             last_epoch = time.time()
+            time.sleep(5)
             continue
 
