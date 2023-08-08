@@ -1,7 +1,10 @@
 import datetime
 import time
-import mediaHelper as MediaHelper
 import os
+
+from telegram import InputMediaAudio, InputMediaVideo, InputMediaDocument, InputMediaPhoto, InputMediaAnimation
+
+
 active = True
 base_url = None
 valid_users = None
@@ -47,33 +50,33 @@ def save_media(update, context):
     file_id = -1
     media_type = "none"
     if update.message.photo:
-            file_id = media.photo[-1].file_id
-            media_type = "photo"
-        elif update.message.video:
-            file_id = media.video.file_id
-            media_type = "video"
-        elif update.message.document:
-            file_id = media.document.file_id
-            media_type = "document"
-        elif update.message.audio:
-            file_id = media.audio.file_id
-            media_type = "audio"
-        elif update.message.sticker:
-            file_id = media.sticker.file_id
-            media_type = "sticker"
-        elif update.message.voice:
-            file_id = media.voice.file_id
-            media_type = "voice"
-        elif update.message.animation:
-            file_id = media.animation.file_id
-            media_type = "animation"
+        file_id = update.message.photo[-1].file_id
+        media_type = "photo"
+    elif update.message.video:
+        file_id = update.message.video.file_id
+        media_type = "video"
+    elif update.message.document:
+        file_id = update.message.document.file_id
+        media_type = "document"
+    elif update.message.audio:
+        file_id = update.message.audio.file_id
+        media_type = "audio"
+    elif update.message.sticker:
+        file_id = update.message.sticker.file_id
+        media_type = "sticker"
+    elif update.message.voice:
+        file_id = update.message.voice.file_id
+        media_type = "voice"
+    elif update.message.animation:
+        file_id = update.message.animation.file_id
+        media_type = "animation"
 
     if file_id == -1:
         context.bot.send_message(chat_id=update.effective_chat.id, text="unable to process media type")
         return
 
-    open("/opt/SilentForwarder/media/"+file_id+"_"+media_type, 'w') as file:
-        pass
+    file = open("/opt/SilentForwarder/media/"+file_id+"_"+media_type, 'w')
+    file.close()
 
     context.bot.send_message(chat_id=update.effective_chat.id, text="saved media with id "+str(file_id))
 
@@ -90,10 +93,6 @@ def send_media_to_channel(bot, channel_id):
         bot.send_document(channel_id, file_id)
     elif media_type == "audio":
         bot.send_audio(channel_id, file_id)
-    elif media_type == "sticker":
-        bot.send_sticker(channel_id, file_id)
-    elif media_type == "voice":
-        bot.send_voice(channel_id, file_id)
     elif media_type == "animation":
         bot.send_animation(channel_id, file_id)
 
@@ -101,51 +100,40 @@ def send_media_to_channel(bot, channel_id):
     os.remove(media_file)
 
 def send_medias_to_channel(bot, channel_id):
-    try:
-        media_files = get_first_n_media(5)
-        if len(medias) <= 0:
-            return
-        if len(medias) == 1:
-            send_media_to_channel(bot, channel_id)
-            return
+    media_files = get_first_n_media(5)
+    if len(medias) <= 0:
+        return
+    if len(medias) == 1:
+        send_media_to_channel(bot, channel_id)
+        return
 
-        medias = []
-        for media_file in media_files:
-            parts = media_file.split("_", 1)
-            file_id = parts[0]
-            media_type = parts[1]
+    medias = []
+    for media_file in media_files:
+        parts = media_file.split("_", 1)
+        file_id = parts[0]
+        media_type = parts[1]
 
-            if media_type == "photo":
-                p = ImageMediaPhoto(media=file_id)
-                medias.append(p)
-            elif media_type == "video":
-                v = ImageMediaVideo(media=file_id)
-                medias.append(v)
-            elif media_type == "document":
-                d = ImageMediaDocument(media=file_id)
-                medias.append(d)
-            elif media_type == "audio":
-                a = ImageMediaAudio(media=file_id)
-                medias.append(a)
-            elif media_type == "sticker":
-                s = ImageMediaSticker(media=file_id)
-                medias.append(s)
-            elif media_type == "voice":
-                vc = ImageMediaVoice(media=file_id)
-                medias.append(vc)
-            elif media_type == "animation":
-                a = ImageMediaAnimation(media=file_id)
-                medias.append(a)
+        if media_type == "photo":
+            p = InputMediaPhoto(media=file_id)
+            medias.append(p)
+        elif media_type == "video":
+            v = InputMediaVideo(media=file_id)
+            medias.append(v)
+        elif media_type == "document":
+            d = InputMediaDocument(media=file_id)
+            medias.append(d)
+        elif media_type == "audio":
+            a = InputMediaAudio(media=file_id)
+            medias.append(a)
+        elif media_type == "animation":
+            a = InputMediaAnimation(media=file_id)
+            medias.append(a)
 
-        bot.send_media_group(chat_id=chat_id, media=medias)
+    bot.send_media_group(chat_id=channel_id, media=medias)
 
-        for path in paths:
-            print("trying to remove: " + media_file)
-            os.remove(medias)
-
-    except Exception as e:
-        print("lolol something went wrong")
-        print(e)
+    for media_file in media_files:
+        print("trying to remove: " + media_file)
+        os.remove(medias)
 
 def reminder(bot, channel_id):
     global active
@@ -159,7 +147,6 @@ def reminder(bot, channel_id):
             last_epoch = time.time()
             time.sleep(5)
             continue
-
 
 def get_first_media():
     folder_path = '/etc/SilentForwarder/media'
@@ -175,9 +162,7 @@ def get_first_n_media(num_files=1):
         file_list = os.listdir(folder_path)
         file_list = [file for file in file_list if os.path.isfile(os.path.join(folder_path, file))]
         oldest_files = sorted(file_list, key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))[:num_files]
-
         oldest_files_paths = [os.path.join(folder_path, file) for file in oldest_files]
-
         return oldest_files_paths
     except OSError as e:
         print(f"Error: {e}")
