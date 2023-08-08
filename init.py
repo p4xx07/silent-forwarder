@@ -15,16 +15,14 @@ handler.set_valid_users(valid_users)
 start_handler = CommandHandler('start', handler.start)
 restart_handler = CommandHandler('stop', handler.stop)
 stop_handler = CommandHandler('restart', handler.restart)
-photo_handler = MessageHandler(Filters.photo & Filters.chat_type.private, handler.save_image)
-image_handler = MessageHandler(Filters.document.image & Filters.chat_type.private, handler.save_image)
+media_handler = MessageHandler((Filters.sticker | Filters.animation | Filters.document | Filters.video | Filters.photo | Filters.audio) & Filters.chat_type.private, handler.save_media)
 unknown_handler = MessageHandler(Filters.command & Filters.chat_type.private, handler.unknown)
 
 dispatcher = updater.dispatcher
 dispatcher.add_handler(start_handler)
 dispatcher.add_handler(restart_handler)
 dispatcher.add_handler(stop_handler)
-dispatcher.add_handler(image_handler)
-dispatcher.add_handler(photo_handler)
+dispatcher.add_handler(media_handler)
 dispatcher.add_handler(unknown_handler)
 
 updater.start_polling()
