@@ -1,6 +1,7 @@
 import datetime
 import time
 import os
+import random
 
 from telegram import InputMediaAudio, InputMediaVideo, InputMediaDocument, InputMediaPhoto, InputMediaAnimation
 
@@ -8,6 +9,7 @@ from telegram import InputMediaAudio, InputMediaVideo, InputMediaDocument, Input
 active = True
 base_url = None
 valid_users = None
+folder_path = '/opt/SilentForwarder/media/'
 
 def set_valid_users(users):
     global valid_users
@@ -75,43 +77,49 @@ def save_media(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text="unable to process media type")
         return
 
-    file = open("/opt/SilentForwarder/media/"+file_id+"_"+media_type, 'w')
+    current_unix_time = int(time.time())
+    random_number = random.randint(1111, 9999)  
+    filename = f"{media_type}_{random_number}_{current_unix_time}"
+    file = open(folder_path+filename, 'w')
+    file.write(file_id + "\n")
     file.close()
 
     context.bot.send_message(chat_id=update.effective_chat.id, text="saved media with id "+str(file_id))
 
 def send_media_to_channel(bot, channel_id):
     media_file = get_first_media()
+    if media_file == "":
+        return
     parts = media_file.split("_", 1)
-    file_id = parts[0]
-    media_type = parts[1]
+    media_type = parts[0]
+    file = open(folder_path + media_file, 'r')
+    file_id = file.readline().strip()
+    file.close()
+
     if media_type == "photo":
         bot.send_photo(channel_id, file_id)
     elif media_type == "video":
         bot.send_video(channel_id, file_id)
-    elif media_type == "document":
-        bot.send_document(channel_id, file_id)
-    elif media_type == "audio":
-        bot.send_audio(channel_id, file_id)
     elif media_type == "animation":
         bot.send_animation(channel_id, file_id)
 
-    print("trying to remove: " + media_file)
-    os.remove(media_file)
+    os.remove(folder_path + media_file)
 
 def send_medias_to_channel(bot, channel_id):
     media_files = get_first_n_media(5)
-    if len(medias) <= 0:
+    if len(media_files) <= 0:
         return
-    if len(medias) == 1:
+    if len(media_files) == 1:
         send_media_to_channel(bot, channel_id)
         return
 
     medias = []
     for media_file in media_files:
         parts = media_file.split("_", 1)
-        file_id = parts[0]
-        media_type = parts[1]
+        media_type = parts[0]
+        file = open(folder_path + media_file, 'r')
+        file_id = file.readline().strip()
+        file.close()
 
         if media_type == "photo":
             p = InputMediaPhoto(media=file_id)
@@ -119,51 +127,54 @@ def send_medias_to_channel(bot, channel_id):
         elif media_type == "video":
             v = InputMediaVideo(media=file_id)
             medias.append(v)
-        elif media_type == "document":
-            d = InputMediaDocument(media=file_id)
-            medias.append(d)
-        elif media_type == "audio":
-            a = InputMediaAudio(media=file_id)
-            medias.append(a)
         elif media_type == "animation":
-            a = InputMediaAnimation(media=file_id)
-            medias.append(a)
+            an = InputMediaAnimation(media=file_id)
+            medias.append(an)
 
-    bot.send_media_group(chat_id=channel_id, media=medias)
+    try:
+        bot.send_media_group(chat_id=channel_id, media=medias)
+
+    except Exception as ex:
+        print(ex)
 
     for media_file in media_files:
-        print("trying to remove: " + media_file)
-        os.remove(medias)
+        os.remove(folder_path+ media_file)
 
 def reminder(bot, channel_id):
     global active
+    #send_medias_to_channel(bot, channel_id)
     last_epoch = time.time()
     while True:
         if active is False:
             time.sleep(5)
             continue
         if(time.time() - last_epoch >= 60 * 30):
-            send_media_to_channel(bot, channel_id)
+            #send_media_to_channel(bot, channel_id)
+            send_medias_to_channel(bot, channel_id)
             last_epoch = time.time()
             time.sleep(5)
             continue
 
 def get_first_media():
-    folder_path = '/etc/SilentForwarder/media'
-    file_list = os.listdir(folder_path)
-    file_list = [file for file in file_list if os.path.isfile(os.path.join(folder_path, file))]
-    oldest_file = min(file_list, key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))
-    oldest_file_path = os.path.join(folder_path, oldest_file)
-    return oldest_file
-
-def get_first_n_media(num_files=1):
-    folder_path = '/etc/SilentForwarder/media'
     try:
         file_list = os.listdir(folder_path)
+        if not file_list:
+            return ""
+        file_list = [file for file in file_list if os.path.isfile(os.path.join(folder_path, file))]
+        oldest_file = min(file_list, key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))
+        return oldest_file
+    except Exception as ex:
+        print(f"Error: {ex}")
+        return ""
+
+def get_first_n_media(num_files=1):
+    try:
+        file_list = os.listdir(folder_path)
+        if not file_list:
+            return ""
         file_list = [file for file in file_list if os.path.isfile(os.path.join(folder_path, file))]
         oldest_files = sorted(file_list, key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))[:num_files]
-        oldest_files_paths = [os.path.join(folder_path, file) for file in oldest_files]
-        return oldest_files_paths
-    except OSError as e:
-        print(f"Error: {e}")
+        return oldest_files
+    except OSError as ex:
+        print(f"Error: {ex}")
         return []

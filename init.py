@@ -20,10 +20,8 @@ stop_handler = CommandHandler("restart", handler.restart)
 media_handler = MessageHandler(
     (
         Filters.animation
-        | Filters.document
         | Filters.video
         | Filters.photo
-        | Filters.audio
     )
     & Filters.chat_type.private,
     handler.save_media,
