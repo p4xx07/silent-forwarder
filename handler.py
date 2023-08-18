@@ -142,15 +142,14 @@ def send_medias_to_channel(bot, channel_id):
 
 def reminder(bot, channel_id):
     global active
-    #send_medias_to_channel(bot, channel_id)
     last_epoch = time.time()
     while True:
         if active is False:
             time.sleep(5)
             continue
         if(time.time() - last_epoch >= 60 * 30):
-            #send_media_to_channel(bot, channel_id)
-            send_medias_to_channel(bot, channel_id)
+            send_media_to_channel(bot, channel_id)
+            #send_medias_to_channel(bot, channel_id)
             last_epoch = time.time()
             time.sleep(5)
             continue
