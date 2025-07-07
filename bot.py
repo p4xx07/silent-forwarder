@@ -1,12 +1,14 @@
-import config
+import os
 import handler
 import logging
-import json
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 from telegram.ext import Updater
 
-(token, channel_id, valid_users) = config.get()
+token = os.environ["TOKEN"]
+channel_id = os.environ["CHANNEL_ID"]
+valid_users = os.environ["VALID_USERS"].split(",")
+
 updater = Updater(token=token)
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
