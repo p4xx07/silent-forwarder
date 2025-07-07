@@ -17,8 +17,6 @@ logging.basicConfig(
 handler.set_valid_users(valid_users)
 
 start_handler = CommandHandler("start", handler.start)
-restart_handler = CommandHandler("stop", handler.stop)
-stop_handler = CommandHandler("restart", handler.restart)
 media_handler = MessageHandler(
     (
         Filters.animation
@@ -34,8 +32,6 @@ unknown_handler = MessageHandler(
 
 dispatcher = updater.dispatcher
 dispatcher.add_handler(start_handler)
-dispatcher.add_handler(restart_handler)
-dispatcher.add_handler(stop_handler)
 dispatcher.add_handler(media_handler)
 dispatcher.add_handler(unknown_handler)
 

@@ -31,16 +31,6 @@ def stop(update, context):
     active = False
     context.bot.send_message(chat_id=update.effective_chat.id, text="Stopped")
 
-
-def restart(update, context):
-    global active
-    if not auth(update.effective_chat.id):
-        return
-    context.bot.send_message(
-        chat_id=update.effective_chat.id, text="Restarting")
-    os.system("sudo systemctl restart silent_forwarder")
-
-
 def unknown(update, context):
     context.bot.send_message(
         chat_id=update.effective_chat.id, text="Invalid command")
