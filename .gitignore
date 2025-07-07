@@ -3,4 +3,6 @@ img
 *.png
 *.jpg
 *.jpeg
+*.yaml
+*.yml
 /media
