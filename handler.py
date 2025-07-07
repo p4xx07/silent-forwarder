@@ -8,7 +8,7 @@ from telegram import InputMediaVideo, InputMediaPhoto, InputMediaAnimation
 active = True
 base_url = None
 valid_users = None
-folder_path = "./"
+folder_path = "./media"
 
 
 def set_valid_users(users):
@@ -30,6 +30,7 @@ def stop(update, context):
         return
     active = False
     context.bot.send_message(chat_id=update.effective_chat.id, text="Stopped")
+
 
 def unknown(update, context):
     context.bot.send_message(
