@@ -81,7 +81,7 @@ def save_media(update, context):
     current_unix_time = int(time.time())
     random_number = random.randint(1111, 9999)
     filename = f"{media_type}_{random_number}_{current_unix_time}"
-    file = open(folder_path+filename, 'w')
+    file = open(os.path.join(folder_path, filename), 'w')
     file.write(file_id + "\n")
     file.close()
 
@@ -95,7 +95,7 @@ def send_media_to_channel(bot, channel_id):
         return
     parts = media_file.split("_", 1)
     media_type = parts[0]
-    file = open(folder_path + media_file, 'r')
+    file = open(os.path.join(folder_path, media_file), 'r')
     file_id = file.readline().strip()
     file.close()
 
@@ -106,7 +106,7 @@ def send_media_to_channel(bot, channel_id):
     elif media_type == "animation":
         bot.send_animation(channel_id, file_id)
 
-    os.remove(folder_path + media_file)
+    os.remove(os.path.join(folder_path, media_file))
 
 
 def send_medias_to_channel(bot, channel_id):
@@ -121,7 +121,7 @@ def send_medias_to_channel(bot, channel_id):
     for media_file in media_files:
         parts = media_file.split("_", 1)
         media_type = parts[0]
-        file = open(folder_path + media_file, 'r')
+        file = open(os.join(folder_path, media_file), 'r')
         file_id = file.readline().strip()
         file.close()
 
@@ -142,7 +142,7 @@ def send_medias_to_channel(bot, channel_id):
         print(ex)
 
     for media_file in media_files:
-        os.remove(folder_path + media_file)
+        os.remove(os.join(folder_path, media_file))
 
 
 def reminder(bot, channel_id):
