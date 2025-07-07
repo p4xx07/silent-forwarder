@@ -99,6 +99,8 @@ def send_media_to_channel(bot, channel_id):
     file_id = file.readline().strip()
     file.close()
 
+    print(f"sending media {media_file}")
+
     if media_type == "photo":
         bot.send_photo(channel_id, file_id)
     elif media_type == "video":
@@ -153,7 +155,9 @@ def reminder(bot, channel_id):
             time.sleep(5)
             continue
         if (time.time() - last_epoch >= 60 * 30):
+            print(f"preparing for channel {channel_id}")
             send_media_to_channel(bot, channel_id)
+            print(f"sent media to channel {channel_id}")
             # send_medias_to_channel(bot, channel_id)
             last_epoch = time.time()
             time.sleep(5)
@@ -164,6 +168,7 @@ def get_first_media():
     try:
         file_list = os.listdir(folder_path)
         if not file_list:
+            print(f"no file found in {folder_path}")
             return ""
         file_list = [file for file in file_list if os.path.isfile(
             os.path.join(folder_path, file))]
