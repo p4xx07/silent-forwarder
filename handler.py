@@ -8,7 +8,7 @@ from telegram import InputMediaVideo, InputMediaPhoto, InputMediaAnimation
 active = True
 base_url = None
 valid_users = None
-folder_path = "./media"
+folder_path = "./"
 
 
 def set_valid_users(users):
